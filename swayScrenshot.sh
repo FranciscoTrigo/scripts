@@ -8,4 +8,6 @@
 
 # Very useful to bind this to a key!
 
+# code@trigomijes.com
+
 grim -g "$(slurp)" - | swappy -f -
