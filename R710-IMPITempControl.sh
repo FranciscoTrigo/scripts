@@ -1,10 +1,15 @@
 #!/bin/bash
 
-# ----------------------------------------------
-#  This script checks the temperature using the ambient temperature sensor
-#  and if it is high it will run IPMI command to re enable dynamic control of fan
-#  otherwise it sets the fan tho low speed to be less loud
-#  Requires ipmitool to be installed
+#--------------------------------
+# This is script is very geared towards me only.
+# It sets the fans on my Dell R710 to a lower speed to that it is less noisy.
+# You can use this script as long as your R710 has an idrac6 module.
+# You have to change IPMIHOST to the IP of the Idrac6 module (not the server itself), root and calvin are
+# the default credentials. You may need to change them.
+#
+# This script may be compatible with other devices but I cannot test it.
+#
+# code@trigomijes.com
 # -------------------------------------------
 
 # IPMI settings
