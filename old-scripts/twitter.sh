@@ -1,8 +1,8 @@
 #!/bin/bash
 
 TWEET=$1
-USERNAME=yamifrankcc
-PASSWORD=leet1337
+USERNAME= put here
+PASSWORD= here put
 
 if [ -z "$1" ]; then
         echo No status update entered. Showing last twenty updates:

@@ -2,8 +2,8 @@
 
 import os
 
-username="YamiFrankc@gmail.com"
-password="leet1337"
+username="asdadsad"
+password="sfddsfsdf"
 com="wget -q -O - https://"+username+":"+password+"@mail.google.com/mail/feed/atom--no-check-certificate"
 
 temp=os.popen(com)
