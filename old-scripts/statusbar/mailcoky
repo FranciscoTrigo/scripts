@@ -1,0 +1,3 @@
+update_interval 300
+TEXT
+^fg(red)[^fg()${exec python ~/scripts/statusbar/mail.py}^fg(red)]

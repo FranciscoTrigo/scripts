@@ -1,0 +1,138 @@
+#!/bin/bash
+
+#This script
+# Should tell me the schedule
+# o.o
+# i hope it workssss
+# ##
+
+
+DAY=$(date +%A)
+
+ESC_SEQ="\x1b["
+COL_RESET=$ESC_SEQ"39;49;00m"
+COL_RED=$ESC_SEQ"31;01m"
+COL_GREEN=$ESC_SEQ"32;01m"
+COL_YELLOW=$ESC_SEQ"33;01m"
+COL_BLUE=$ESC_SEQ"34;01m"
+COL_MAGENTA=$ESC_SEQ"35;01m"
+COL_CYAN=$ESC_SEQ"36;01m"
+
+
+lunes () {
+    echo -e This is $COL_BLUE Monday $COL_RESET schedule
+    echo You dont want to go school, eh?
+    echo -e $COL_BLUE 07 $COL_RED - $COL_BLUE 09 $COL_RESET Quimica
+    echo -e $COL_BLUE 09 $COL_RED - $COL_BLUE 11 $COL_RESET   Termodinamica
+    echo -e $COL_BLUE 11 $COL_RED - $COL_BLUE 12 $COL_RESET   Mecanica
+    echo -e $COL_BLUE 12 $COL_RED - $COL_BLUE 15 $COL_RESET   Taller
+    echo -e              $COL_RED YAY! Out of Jail
+}
+
+martes () {
+     echo -e This is $COL_BLUE Tuesday $COL_RESET schedule
+     echo -e $COL_BLUE 07 $COL_RED - $COL_BLUE 08 $COL_RESET Dibujo
+     echo -e $COL_BLUE 08 $COL_RED - $COL_BLUE 09 $COL_RESET Termodinamica
+     echo -e $COL_BLUE 09 $COL_RED - $COL_BLUE 10 $COL_RESET Quimica
+     echo -e $COL_BLUE 10 $COL_RED - $COL_BLUE 11 $COL_RESET Espanol
+     echo -e $COL_BLUE 11 $COL_RED - $COL_BLUE 12 $COL_RESET Mecanica
+     echo -e $COL_BLUE 12 $COL_RED - $COL_BLUE 13 $COL_RESET Taller
+ }
+
+ wed () {
+     echo -e This is $COL_BLUE Wednesdat $COL_RESET schedule
+     echo -e $COL_BLUE 07 $COL_RED - $COL_BLUE 08 $COL_RESET Matematicas
+     echo -e $COL_BLUE 08 $COL_RED - $COL_BLUE 09 $COL_RESET Mecanica
+     echo -e $COL_BLUE 09 $COL_RED - $COL_BLUE 12 $COL_RESET Dibujo
+     echo -e $COL_BLUE 12 $COL_RED - $COL_BLUE 14 $COL_RESET Filosofia
+ }
+
+ jue () {
+     echo -e This is $COL_BLUE Jueves $COL_RESET schedule
+     echo -e $COL_BLUE 07 $COL_RED - $COL_BLUE 09 $COL_RESET Qumica
+     echo -e $COL_BLUE 09 $COL_RED - $COL_BLUE 10 $COL_RESET Filosofia
+     echo -e $COL_BLUE 10 $COL_RED - $COL_BLUE 12 $COL_RESET Espanol
+     echo -e $COL_BLUE 12 $COL_RED - $COL_BLUE 13 $COL_RESET Ingles
+     echo -e $COL_BLUE 13 $COL_RED - $COL_BLUE 14 $COL_RESET Fisica
+ }
+
+ vie () {
+     echo -e This is $COL_BLUE Friday $COL_RESET schedule
+     echo -e $COL_BLUE 07 $COL_RED - $COL_BLUE 09 $COL_RESET Mecanica
+     echo -e $COL_BLUE 09 $COL_RED - $COL_BLUE 10 $COL_RESET Espanol
+     echo -e $COL_BLUE 10 $COL_RED - $COL_BLUE 12 $COL_RESET Fisica
+     echo -e $COL_BLUE 12 $COL_RED - $COL_BLUE 14 $COL_RESET Arte
+ }
+
+ sab () {
+     echo -e This is $COL_BLUE Saturday $COL_RESET schedule
+     echo -e $COL_BLUE 07 $COL_RED - $COL_BLUE 08 $COL_RESET Fisica
+     echo -e $COL_BLUE 09 $COL_RED - $COL_BLUE 10 $COL_RESET Ingles
+     echo -e $COL_BLUE 10 $COL_RED - $COL_BLUE 12 $COL_RESET Matematicas
+     echo -e $COL_BLUE 12 $COL_RED - $COL_BLUE 14 $COL_RESET E. Fisica
+ }
+
+ err() {
+       echo "$1"
+         exit 1
+}
+
+today() {
+    if [ $DAY = Monday ] 
+    then
+        lunes
+    else
+        if [ $DAY = Tuesday ]
+        then
+            martes
+        else
+            if [ $DAY = Wednesday ]
+        then
+            wed
+        else
+            if [ $DAY = Thursday ]
+            then
+                jue
+            else
+                if [ $DAY = Friday ]
+                then
+                    vie
+                else
+                    if [ $DAY = Saturday ]
+                    then
+                        sab
+                    else
+                        dom
+                    fi
+                fi
+            fi
+        fi
+    fi
+fi
+
+                }
+
+
+
+
+
+
+
+
+    
+    dom() {
+    echo $COL_RED WTF $COL_RESET Do you want to go to school on $COL_BLUE Sunday?
+}
+
+
+case "$1" in
+ '-l'|'-lunes') lunes ;;
+ '-ma'|'-martes') martes ;;
+ '-mi'|'-miercoles') wed ;;
+ '-j'|'-jueves') jue ;;
+ '-v'|'-viernes') vie ;;
+ '-s'|'-sabado') sab ;;
+ '-d'|'-domingo') dom ;;
+ *) today ;;
+esac
+

@@ -1,0 +1,262 @@
+#!/bin/zsh
+# A fork of ossvol with minor changes.
+# Original by: Daniel J Griffiths <ghost1227[at]archlinux.us>
+# Modified by: milomouse <vincent[at]fea.st>
+
+volstore=$XDG_CONFIG_DIR/.volume
+version='1.4-1'
+channel="vol"
+argument=$2
+
+usage() {
+  echo "usage: mossrat [option] [argument]"
+  echo
+  echo "Options:"
+  echo "     -i, --increase - increase volume by [argument]"
+  echo "     -d, --decrease - decrease volume by [argument]"
+  echo "     -t, --toggle   - toggle play/pause"
+  echo "     -m, --mute     - mute/unmute"
+  echo "     -n, --next     - play [next] song"
+  echo "     -p, --prev     - play previous song"
+  echo "     -s, --stop     - stop playing current song"
+  echo "     -a, --announce - display current song"
+  echo "     -x, --xmonad^  - display current song for dzen"
+  echo "     -v, --version  - display version"
+  echo "     -h, --help     - display this"
+  exit
+}
+
+err() {
+  echo "$1"
+  exit 1
+}
+
+toggle() {
+  if [ $(mpc|head -2|tail -1|awk '{print $1}'|tr '[]' ' ') = playing ]; then
+    mpc toggle >> /dev/null
+    if [ ! $(pgrep xinit) ]; then
+      print "Paused: $(mpc --format '"%title%" \| %artist% \[%album%\]'|head -1)"
+    fi
+  else
+    mpc toggle >> /dev/null
+    if [ ! $(pgrep xinit) ]; then
+      print "$(mpc --format '"%title%" \| %artist% \[%album%\]'|head -1)"
+    fi
+  fi
+}
+
+next() {
+  if [ $(mpc|wc -l) = 1 ]; then
+    mpc play >> /dev/null
+    if [ ! $(pgrep xinit) ]; then
+      print "$(mpc --format '"%title%" \| %artist% \[%album%\]'|head -1)"
+    fi
+  else
+    mpc next >> /dev/null
+    if [ ! $(pgrep xinit) ]; then
+      print "$(mpc --format '"%title%" \| %artist% \[%album%\]'|head -1)"
+    fi
+  fi
+}
+
+previous() {
+  if [ $(mpc|wc -l) = 1 ]; then
+    if [ ! $(pgrep xinit) ]; then
+      print "Nothing playing."
+    fi
+  else
+    mpc prev >> /dev/null
+    if [ ! $(pgrep xinit) ]; then
+      print "$(mpc --format '"%title%" \| %artist% \[%album%\]'|head -1)"
+    fi
+  fi
+}
+
+cancel() {
+  if [ $(mpc|wc -l) = 3 ]; then
+    mpc stop >> /dev/null
+    curr=$(ossmix vol | cut -c 50-54 | sed s/:/""/ | sed s/01/1/)
+    info=$(echo -n ">>> Stopped >>> Volume: $curr %")
+    if [ ! $(pgrep xinit) ]; then
+      echo "Stopped: $(mpc --format '%artist% - "%title%" (%album%)'|head -1)"
+    fi
+  fi
+}
+
+mute() {
+  if [[ -f $volstore ]]; then
+    ossmix $channel $(<$volstore) >>/dev/null
+    rm -f $volstore
+    curr=$(ossmix vol | cut -c 50-54 | sed s/:/""/ | sed s/01/1/)
+    if [ ! $(pgrep xinit) ]; then
+      print "Volume: $curr %"
+    fi
+  else
+    volume=$(ossmix $channel | awk '{print $10}' | awk -F : '{print $1}')
+    ossmix $channel 0 >>/dev/null
+    $(echo $volume >> $volstore)
+    if [ ! $(pgrep xinit) ]; then
+      print "Volume: MUTED"
+    fi
+  fi
+}
+
+increase() {
+  if [[ -f $volstore ]]; then
+    tmpvol=$(<$volstore)
+    newvol=$(expr $tmpvol + $argument)
+    ossmix $channel +$newvol >>/dev/null
+    rm -f $volstore
+  else
+    ossmix $channel +$argument >>/dev/null
+    curr=$(ossmix vol | cut -c 50-54 | sed s/:/""/ | sed s/01/1/)
+    if [ ! $(pgrep xinit) ]; then
+      print "Volume: $curr %"
+    fi
+  fi
+}
+
+decrease() {
+  if [[ -f $volstore ]]; then
+    tmpvol=$(<$volstore)
+    newvol=$(expr $tmpvol - $argument)
+    ossmix $channel -- -$newvol >>/dev/null
+    rm $volstore
+  else
+    ossmix $channel -- -$argument >>/dev/null
+    curr=$(ossmix vol | cut -c 50-54 | sed s/:/""/ | sed s/01/1/)
+    if [ ! $(pgrep xinit) ]; then
+      print "Volume: $curr %"
+    fi
+  fi
+}
+
+version() {
+  _mod=$(ls -lt $(which mossrat)|awk '{print $6" "$7" "$8}')
+  print "$version (last modified at $_mod)"
+}
+
+announce() {
+  if [[ -z $(pgrep mpd) ]]; then
+    if [[ $XMOD != "1" ]]; then
+      print "mpd not running."
+    else
+      print "^fg(#333)mpd not running.^fg()"
+    fi
+  else
+  curr=$(ossmix vol | cut -c 50-54 | sed s/:/""/ | sed s/01/1/)
+  if [[ $XMOD != "1" ]]; then
+    nmbr=$(mpc|head -1)
+  else
+    if [[ $(mpc|head -1|wc -c) -gt 58 ]]; then
+      nmbr=$(echo $(mpc --format '^fg(`444444)%artist% ^fg(`007b8c)- "^fg(`5f656b)%title%'|head -1|sed 's|fg(`|fg(#|g'|cut -c1-92) "^fg()..^fg(#007b8c)\"")
+    else
+      nmbr=$(echo $(mpc --format '^fg(`444444)%artist% ^fg(`007b8c)- "^fg(`5f656b)%title%'|head -1|sed 's|fg(`|fg(#|g')"^fg(#007b8c)\"")
+    fi
+  fi
+  if [[ $(echo $curr|cut -d "." -f1) -lt 10 ]]; then
+    if [[ $XMOD != "1" ]]; then
+      curr=$(echo " "$curr)
+    else
+      curr=$(echo "^fg(#767b7e)^fg()"$curr)
+    fi
+  fi
+  if [ $(mpc|head -2|tail -1|awk '{print $1}'|tr '[]' ' ') = paused ]; then
+    if [ ! $(pgrep xinit) ]; then
+      print "Paused: $(mpc --format '"%title%" \| %artist% \[%album%\]'|head -1) ($curr %)"
+    else
+      if [[ $XMOD != "1" ]]; then
+        info=$(echo -n "mossRat Paused >>> $(mpc|tail -1|awk '{print $2" "$3" "$4" "$5}'|tr 'r' 'R')")
+        echo "$info | $curr ^fg()%"
+      else
+        if [ $(pgrep mplayer) ]; then
+          info=$(echo -n "^fg(#515051)Paused ^fg(#5f656b)[MPlayer Found] ^fg(#a488d9)>""^fg(#007b8c)>""^fg(#444444)>^fg(#8c8b8e)" $(mpc|tail -1|\
+        awk '{print " "$2" "$3" "$4" "$5}'|sed 's|off|'"^fg(#007b8c)"'&'"^fg()"'|g;s|:|'"^fg(#5f656b)"'&'"^fg()"'|g;s|on|'"^fg(#a488d9)"'&'"^fg()"'|g'|tr 'r' 'R'))
+        else
+          info=$(echo -n "^fg(#515051)Paused ^fg(#a488d9)>""^fg(#007b8c)>""^fg(#444444)>^fg(#8c8b8e)" $(mpc|tail -1|\
+        awk '{print " "$2" "$3" "$4" "$5}'|sed 's|off|'"^fg(#007b8c)"'&'"^fg()"'|g;s|:|'"^fg(#5f656b)"'&'"^fg()"'|g;s|on|'"^fg(#a488d9)"'&'"^fg()"'|g'|tr 'r' 'R'))
+        fi
+        echo "$info ^fg(#a488d9)|""^fg(#8c8b8e) $curr^fg(#5f656b)%"
+      fi
+    fi
+  elif [ $(mpc|wc -l) = 1 ]; then
+    if [ ! $(pgrep xinit) ]; then
+      print "$(mpc --format '"%title%" \| %artist% \[%album%\]'|head -1) ($curr %)"
+    else
+      if [[ $XMOD != "1" ]]; then
+        first=$(echo -n "Nothing Playing")
+        second=$(echo -n ">>> $(mpc|tail -1|awk '{print $2" "$3" "$4" "$5}'|tr 'r' 'R')")
+        info=$(echo -n $first $second)
+        echo "$info | $curr % "
+      else
+        if [ $(pgrep mplayer) ]; then
+          first=$(echo -n "^fg(#515051)Stopped ^fg(#5f656b)[MPlayer Found]")
+        else
+          first=$(echo -n "^fg(#515051)Stopped")
+        fi
+        second=$(echo -n "^fg(#a488d9)>""^fg(#007b8c)>""^fg(#444444)>^fg(#8c8b8e)"$(mpc|tail -1|awk '{print " "$2" "$3" "$4" "$5}'\
+        |sed 's|off|'"^fg(#007b8c)"'&'"^fg()"'|g;s|:|'"^fg(#5f656b)"'&'"^fg()"'|g;s|on|'"^fg(#a488d9)"'&'"^fg()"'|g'|tr 'r' 'R'))
+        info=$(echo -n $first $second)
+        echo "$info ^fg(#a488d9)|""^fg(#8c8b8e) $curr^fg(#5f656b)%"
+      fi
+    fi
+  else
+    if [ ! $(pgrep xinit) ]; then
+      print "$(mpc --format '"%title%" \| %artist% \[%album%\]'|head -1) ($curr %)"
+    else
+      if [[ $XMOD != "1" ]]; then
+        first=$nmbr
+        second=$(echo -n ">>> $(mpc|head -2|tail -1|awk '{print $3" "$2}')")
+        info=$(echo -n $nmbr $second "| $curr %")
+        echo "$info"
+      else
+        first=$(echo -n "^fg(#515051)$nmbr")
+        second=$(echo -n "^fg(#a488d9)>""^fg(#007b8c)>""^fg(#444444)> ^fg(#8c8b8e)$(mpc|head -2|tail -1|awk '{print $3" "$2}'|\
+        sed 's|/|'"^fg(#007b8c)"'&'"^fg()"'|g;s|:|'"^fg(#5f656b)"'&'"^fg()"'|g;s| #|'"^fg(#7965ac)"'&'"^fg()"'|g')")
+        info=$(echo -n $first $second)
+        echo "$info ^fg(#a488d9)|""^fg(#8c8b8e) $curr^fg(#5f656b)%"
+      fi
+    fi
+  fi
+  fi
+}
+
+case "$1" in
+  '-i'|'--increase')
+  increase
+  ;;
+  '-d'|'--decrease')
+  decrease
+  ;;
+  '-t'|'--toggle')
+  toggle
+  ;;
+  '-m'|'--mute')
+  mute
+  ;;
+  '-n'|'--next')
+  next
+  ;;
+  '-p'|'--prev')
+  previous
+  ;;
+  '-s'|'--stop')
+  cancel
+  ;;
+  '-a'|'--announce')
+  announce
+  ;;
+  '-x'|'--xmonad')
+  XMOD="1"
+  announce
+  ;;
+  '-v'|'--version')
+  version
+  ;;
+  ''|'-h'|'--help')
+  usage
+  ;;
+  *)
+  err "Unrecognized option \`$1', see mossrat --help"
+  ;;
+esac

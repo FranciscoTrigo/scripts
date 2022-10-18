@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# sorts dmenu entries by usage
+#
+###
+
+if [ -f $HOME/.dmenurc ]; then
+  . $HOME/.dmenurc
+else
+  DMENU='dmenu -i -fn xft:Fixed-6 -nb #101010 -nf #909090 -sb #909090 -sf #101010 -y 15'
+fi
+
+CACHE="$HOME/.dmenu_cache_recent"
+
+touch $CACHE
+
+MOST_USED=$(LC_ALL="C"; sort $CACHE | uniq -c | sort -r | colrm 1 8)
+
+RUN="$((echo "$MOST_USED"; dmenu_path | grep -vx "$MOST_USED") | $DMENU)"
+
+if [ -n "$RUN" ]; then
+  (echo $RUN; head -n99 $CACHE) > $CACHE.$$ && mv $CACHE.$$ $CACHE
+
+  $RUN &
+fi

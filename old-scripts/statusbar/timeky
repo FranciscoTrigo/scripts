@@ -1,0 +1,4 @@
+update_interval 1
+
+TEXT
+${time %a %d.%m.%Y %R}

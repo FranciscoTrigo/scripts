@@ -1,0 +1,4 @@
+update_interval 1
+
+TEXT
+^fg(red)[^fg()${mpd_status}^fg(red)]^fg() ${mpd_smart} ^fg(red)(^fg()${mpd_elapsed}^fg(red)/^fg()${mpd_length}^fg(red))

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+paccheck=$(pacman -Qu | wc -l)
+
+if [ $paccheck -gt 0 ]; then
+   echo "A"
+else
+   echo "A"
+fi

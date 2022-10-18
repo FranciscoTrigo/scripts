@@ -1,0 +1,4 @@
+update_interval 1
+
+TEXT
+Volume ${exec ossmix vol | cut -c 50-54 | sed s/:/""/ | sed s/01/1/}%

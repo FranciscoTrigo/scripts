@@ -1,0 +1,5 @@
+update_interval 1
+
+TEXT
+Vol: ${exec ossmix vol | cut -c 50-54 | sed s/:/""/ | sed s/01/1/} ${mpd_status} ${mpd_elapsed}/${mpd_length} ${mpd_smart} ${time %a %d.%m.%Y %R}
+
